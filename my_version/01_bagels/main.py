@@ -2,16 +2,12 @@ import random
 
 NUM_LENGTH:int=3
 NUM_CHANCES:int=8
+ALLOW_DUPLICATES:bool=False
+ALLOW_INFINITE_CHANCES:bool=False
 ALLOW_CHARACTERS:bool=False
-ALLOW_UPPER_CHARACTERS:bool=False
+ALLOW_UPPER_CHARACTERS:bool=False and ALLOW_CHARACTERS
 
-def main():
-
-##################################################
-#######################################################
-# presentation:
-
-    print('''Bagels, a deductive logic game
+presentation:str='''Bagels, a deductive logic game
 By Al Sweigart with codes improved by Heber-Dsouza
 
 I am thinking of a {}-digit {} with no repeated digits.
@@ -23,19 +19,18 @@ When I say:    That means:
   
 For example, if the secret number was 248 and your guess was 843
 clues would be Fermi Pico.
-'''.format(NUM_LENGTH, 'word' if ALLOW_CHARACTERS else 'number'))
+'''.format(NUM_LENGTH, 'word' if ALLOW_CHARACTERS else 'number')
 
-#######################################################
-##################################################
-
+def main():
+    print(presentation)
     while True:
         secret_number: str = get_secret_num()
-        print('I have thought up a number.')
-        print(f"You have {NUM_CHANCES} guesses to get it.")
+        print(f"I have thought up a {'word' if ALLOW_CHARACTERS else 'number'}.")
+        print(f"You have {'infinite' if ALLOW_INFINITE_CHANCES else NUM_CHANCES} guesses to get it.")
         num_guesses:int=1
-        while num_guesses<=NUM_CHANCES:
+        while num_guesses<=NUM_CHANCES or ALLOW_INFINITE_CHANCES:
             guess:str=''
-            while len(guess)!=NUM_LENGTH or not guess.isdecimal():
+            while len(guess)!=NUM_LENGTH or (not ALLOW_CHARACTERS and not guess.isdecimal()):
                 print(f"Guess #{num_guesses}: ")
                 guess=input('> ')
             clues:str=get_clues(guess,secret_number)
@@ -43,7 +38,7 @@ clues would be Fermi Pico.
             num_guesses+=1
             if guess==secret_number:
                 break
-            if num_guesses>NUM_CHANCES:
+            if not ALLOW_INFINITE_CHANCES and num_guesses>NUM_CHANCES:
                 print('You ran out of guesses.')
                 print(f"The answer was {secret_number}.")
         print('Do you want to play again? (yes or No)')
@@ -64,6 +59,8 @@ def get_secret_num()->str:
     result:str=''
     for i in range(NUM_LENGTH):
         result+=list_of_nums[i]
+        if ALLOW_DUPLICATES:
+            random.shuffle(list_of_nums)
     return result
 
 def get_clues(guess:str,secret_number:str)->str:
